@@ -38,3 +38,7 @@ Le projet inclut une suite complète de tests unitaires couvrant la logique du q
 ```bash
 flutter test
 ```
+
+## Contributeurs
+
+Ce projet a été développé en collaboration par Dylan & Lucas.
