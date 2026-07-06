@@ -24,7 +24,6 @@ class QuizResultsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Score Summary Card
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(24.0),
@@ -56,16 +55,10 @@ class QuizResultsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Question Recap Title
                 Text(
                   'Récapitulatif',
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
-                const SizedBox(height: 10),
-
-                // Detailed Recap List
                 Expanded(
                   child: ListView.builder(
                     itemCount: controller.questions.length,
@@ -121,9 +114,6 @@ class QuizResultsScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // Restart Button
                 ElevatedButton(
                   onPressed: () {
                     controller.resetQuiz();

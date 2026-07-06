@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/quiz_controller.dart';
 import '../theme/app_theme.dart';
+import '../widgets/scale_on_press.dart';
 import 'quiz_game_screen.dart';
 
 class CategorySelectionScreen extends StatefulWidget {
@@ -72,8 +73,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
-
-                    // Category Selection
                     Text(
                       'Catégorie',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -107,8 +106,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
-
-                    // Difficulty Selection
                     Text(
                       'Difficulté',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -132,8 +129,6 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       },
                     ),
                     const SizedBox(height: 20),
-
-                    // Question Amount
                     Text(
                       'Nombre de questions',
                       style: Theme.of(context).textTheme.titleLarge,
@@ -157,34 +152,37 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       },
                     ),
                     const SizedBox(height: 32),
-
-                    // Start Button
-                    ElevatedButton(
-                      onPressed: () async {
-                        await controller.startQuiz();
-                        if (!context.mounted) return;
-                        if (controller.state == QuizState.playing) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const QuizGameScreen(),
-                            ),
-                          );
-                        } else if (controller.state == QuizState.error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(controller.errorMessage ?? 'Erreur lors du lancement'),
-                              backgroundColor: AppTheme.errorColor,
-                            ),
-                          );
-                        }
-                      },
-                      child: controller.state == QuizState.loadingQuestions
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : const Text('DÉMARRER LE QUIZ'),
+                    ScaleOnPress(
+                      onTap: controller.state == QuizState.loadingQuestions
+                          ? null
+                          : () async {
+                              await controller.startQuiz();
+                              if (!context.mounted) return;
+                              if (controller.state == QuizState.playing) {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const QuizGameScreen(),
+                                  ),
+                                );
+                              } else if (controller.state == QuizState.error) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(controller.errorMessage ?? 'Erreur lors du lancement'),
+                                    backgroundColor: AppTheme.errorColor,
+                                  ),
+                                );
+                              }
+                            },
+                      child: ElevatedButton(
+                        onPressed: null, // Tap interaction and timing handled by ScaleOnPress
+                        child: controller.state == QuizState.loadingQuestions
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('DÉMARRER LE QUIZ'),
+                      ),
                     ),
                   ],
                 ),

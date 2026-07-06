@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Brand Colors
-  static const Color primaryColor = Color(0xFF3F51B5); // Indigo
+  static const Color primaryColor = Color(0xFF3F51B5);
   static const Color primaryDark = Color(0xFF303F9F);
-  static const Color accentColor = Color(0xFF00BCD4); // Cyan
-  static const Color backgroundColor = Color(0xFFF5F7FA); // Soft Slate Gray
+  static const Color accentColor = Color(0xFF00BCD4);
+  static const Color backgroundColor = Color(0xFFF5F7FA);
   static const Color surfaceColor = Colors.white;
-  static const Color textPrimary = Color(0xFF2C3E50); // Dark Slate Blue
-  static const Color textSecondary = Color(0xFF7F8C8D); // Cool Gray
-  static const Color successColor = Color(0xFF2ECC71); // Clean Green
-  static const Color errorColor = Color(0xFFE74C3C); // Soft Red
-  static const Color borderLight = Color(0xFFE2E8F0); // Very light grey border
+  static const Color textPrimary = Color(0xFF2C3E50);
+  static const Color textSecondary = Color(0xFF7F8C8D);
+  static const Color successColor = Color(0xFF2ECC71);
+  static const Color errorColor = Color(0xFFE74C3C);
+  static const Color borderLight = Color(0xFFE2E8F0);
 
   static ThemeData get lightTheme {
     return ThemeData(

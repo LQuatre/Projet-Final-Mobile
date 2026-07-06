@@ -6,7 +6,7 @@ import 'data/datasources/trivia_remote_datasource.dart';
 import 'data/repositories/trivia_repository_impl.dart';
 import 'domain/repositories/trivia_repository.dart';
 import 'presentation/controllers/quiz_controller.dart';
-import 'presentation/screens/category_selection_screen.dart';
+import 'presentation/screens/dashboard_screen.dart';
 import 'presentation/theme/app_theme.dart';
 
 void main() {
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Quizzty',
       theme: AppTheme.lightTheme,
-      home: const CategorySelectionScreen(),
+      home: const DashboardScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

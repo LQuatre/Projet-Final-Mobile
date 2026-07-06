@@ -19,7 +19,7 @@ class QuizController extends ChangeNotifier {
   TriviaCategory? _selectedCategory;
   TriviaCategory? get selectedCategory => _selectedCategory;
 
-  String _selectedDifficulty = 'medium'; // all, easy, medium, hard
+  String _selectedDifficulty = 'medium';
   String get selectedDifficulty => _selectedDifficulty;
 
   int _selectedAmount = 10;

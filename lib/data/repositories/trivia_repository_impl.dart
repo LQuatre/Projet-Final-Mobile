@@ -17,7 +17,6 @@ class TriviaRepositoryImpl implements TriviaRepository {
     final categoriesDto = await remoteDatasource.fetchCategories();
     if (categoriesDto.isEmpty) return [];
 
-    // Batch translate all category names to French in a single HTTP call
     final joinedNames = categoriesDto.map((dto) => dto.name).join(' | ');
     final translatedJoined = await _translateToFrench(joinedNames, remoteDatasource.client);
     final parts = translatedJoined.split(RegExp(r'\s*\|\s*'));
@@ -46,9 +45,7 @@ class TriviaRepositoryImpl implements TriviaRepository {
         final responseData = data['responseData'] as Map<String, dynamic>;
         return responseData['translatedText'] as String;
       }
-    } catch (_) {
-      // Fallback on error
-    }
+    } catch (_) {}
     return text;
   }
 
@@ -73,7 +70,6 @@ class TriviaRepositoryImpl implements TriviaRepository {
       final unescapedIncorrect =
           dto.incorrectAnswers.map((ans) => _unescape.convert(ans)).toList();
 
-      // Join category, question, and answers to translate in a single request
       final joinedSource = [
         unescapedCategory,
         unescapedQuestion,

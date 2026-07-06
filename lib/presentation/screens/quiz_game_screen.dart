@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../controllers/quiz_controller.dart';
 import '../theme/app_theme.dart';
 import 'quiz_results_screen.dart';
+import '../widgets/scale_on_press.dart';
 
 class Particle {
   double x;
@@ -53,8 +54,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
         for (final p in _particles) {
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.4; // Gravity
-          p.vx *= 0.98; // Air resistance
+          p.vy += 0.4;
+          p.vx *= 0.98;
           p.vy *= 0.98;
           p.rotation += p.rotationSpeed;
         }
@@ -75,7 +76,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
 
     final colors = [
       Colors.amber,
-      const Color(0xFFFFD700), // Gold
+      const Color(0xFFFFD700),
       Colors.orangeAccent,
       Colors.yellowAccent,
       Colors.pinkAccent,
@@ -83,15 +84,14 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
       Colors.lightGreenAccent,
     ];
 
-    // Left side particles (shooting up and right)
     for (int i = 0; i < 25; i++) {
-      final angle = -random.nextDouble() * (math.pi / 3); // -60 to 0 degrees
+      final angle = -random.nextDouble() * (math.pi / 3);
       final speed = 8.0 + random.nextDouble() * 14.0;
       _particles.add(Particle(
         x: 0,
         y: size.height * 0.55,
         vx: math.cos(angle) * speed,
-        vy: math.sin(angle) * speed - 4.0, // Shoot upwards
+        vy: math.sin(angle) * speed - 4.0,
         color: colors[random.nextInt(colors.length)],
         size: 6.0 + random.nextDouble() * 8.0,
         rotation: random.nextDouble() * math.pi,
@@ -99,15 +99,14 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
       ));
     }
 
-    // Right side particles (shooting up and left)
     for (int i = 0; i < 25; i++) {
-      final angle = math.pi - random.nextDouble() * (math.pi / 3); // 180 to 240 degrees
+      final angle = math.pi - random.nextDouble() * (math.pi / 3);
       final speed = 8.0 + random.nextDouble() * 14.0;
       _particles.add(Particle(
         x: size.width,
         y: size.height * 0.55,
         vx: math.cos(angle) * speed,
-        vy: math.sin(angle) * speed - 4.0, // Shoot upwards
+        vy: math.sin(angle) * speed - 4.0,
         color: colors[random.nextInt(colors.length)],
         size: 6.0 + random.nextDouble() * 8.0,
         rotation: random.nextDouble() * math.pi,
@@ -138,8 +137,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(dialogContext).pop(); // pop dialog
-                      Navigator.of(context).pop(); // pop game screen
+                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).pop();
                     },
                     child: const Text(
                       'QUITTER',
@@ -164,7 +163,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
               final totalQuestions = controller.questions.length;
               final currentQuestion = controller.questions[questionIndex];
 
-              // Reset showOriginal state if we moved to a new question
               if (_lastQuestionIndex != questionIndex) {
                 _showOriginal = false;
                 _lastQuestionIndex = questionIndex;
@@ -175,7 +173,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Progress Bar
                     LinearProgressIndicator(
                       value: (questionIndex + 1) / totalQuestions,
                       backgroundColor: AppTheme.borderLight,
@@ -185,7 +182,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                     ),
                     const SizedBox(height: 16),
 
-                    // Question Metadata
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -219,8 +215,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                       ],
                     ),
                     const SizedBox(height: 20),
-
-                    // Question Card
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(20.0),
@@ -241,8 +235,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Options List
                     ...List.generate(currentQuestion.allAnswers.length, (index) {
                       final frenchAnswer = currentQuestion.allAnswers[index];
                       final englishAnswer = currentQuestion.originalAllAnswers[index];
@@ -260,8 +252,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                       );
                     }),
                     const SizedBox(height: 16),
-
-                    // Toggle Original English Question Button
                     Center(
                       child: TextButton.icon(
                         onPressed: () {
@@ -285,8 +275,6 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // Next Button
                     if (currentQuestion.isAnswered)
                       ElevatedButton(
                         onPressed: () {
@@ -309,7 +297,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                         ),
                       )
                     else
-                      const SizedBox(height: 48), // Spacing placeholder
+                      const SizedBox(height: 48),
                   ],
                 ),
               );
@@ -356,8 +344,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
       }
     }
 
-    return OutlinedButton(
-      onPressed: isAnswered
+    return ScaleOnPress(
+      onTap: isAnswered
           ? null
           : () {
               controller.answerQuestion(answer);
@@ -365,23 +353,26 @@ class _QuizGameScreenState extends State<QuizGameScreen> with SingleTickerProvid
                 _spawnGlitter(context);
               }
             },
-      style: OutlinedButton.styleFrom(
-        backgroundColor: buttonColor,
-        foregroundColor: textColor,
-        side: borderSide,
-        disabledForegroundColor: textColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+      child: OutlinedButton(
+        onPressed: null, // Gesture detection and tap action handled by ScaleOnPress wrapper
+        style: OutlinedButton.styleFrom(
+          backgroundColor: buttonColor,
+          foregroundColor: textColor,
+          side: borderSide,
+          disabledForegroundColor: textColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          displayText,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            displayText,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ),
@@ -404,7 +395,6 @@ class GlitterPainter extends CustomPainter {
       canvas.translate(p.x, p.y);
       canvas.rotate(p.rotation);
 
-      // Draw diamond particle
       final r = p.size / 2;
       final path = Path()
         ..moveTo(0, -r)
