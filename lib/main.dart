@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Quizzty',
+      title: 'TravelQuizzie',
       theme: AppTheme.lightTheme,
       home: const DashboardScreen(),
       debugShowCheckedModeBanner: false,

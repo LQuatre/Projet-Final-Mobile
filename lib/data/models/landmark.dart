@@ -1,7 +1,7 @@
 class Landmark {
   final String id;
   final String title;
-  final String imageUrl;
+  String imageUrl;
   final String description;
   final double latitude;
   final double longitude;
@@ -43,5 +43,46 @@ class Landmark {
       'date': date,
       'isVisited': isVisited,
     };
+  }
+
+  String get formattedDate {
+    try {
+      final parts = date.split('-');
+      if (parts.length != 3) return date;
+
+      final year = int.tryParse(parts[0]);
+      final month = int.tryParse(parts[1]);
+      final day = int.tryParse(parts[2]);
+
+      if (year == null || month == null || day == null) return date;
+
+      if (year < 100) {
+        return "An $year";
+      }
+
+      if (month == 1 && day == 1) {
+        return "$year";
+      }
+
+      final monthsFr = [
+        "janvier",
+        "février",
+        "mars",
+        "avril",
+        "mai",
+        "juin",
+        "juillet",
+        "août",
+        "septembre",
+        "octobre",
+        "novembre",
+        "décembre"
+      ];
+
+      if (month >= 1 && month <= 12) {
+        return "$day ${monthsFr[month - 1]} $year";
+      }
+    } catch (_) {}
+    return date;
   }
 }

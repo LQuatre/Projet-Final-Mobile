@@ -176,16 +176,17 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
   }
 
   Future<void> _navigateToDetail(Landmark landmark) async {
-    final bool? result = await Navigator.push(
+    final dynamic result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => LandmarkDetailScreen(landmark: landmark),
       ),
     );
 
-    if (result == true) {
+    if (result is String) {
       setState(() {
         landmark.isVisited = true;
+        landmark.imageUrl = result;
       });
     }
   }

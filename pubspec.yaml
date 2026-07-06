@@ -41,6 +41,7 @@ dependencies:
   camera: ^0.12.0+1
   permission_handler: ^12.0.3
   shared_preferences: ^2.5.5
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:
@@ -99,6 +100,6 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/app_icon.jpg"
+  image_path: "assets/logo.png"
   remove_alpha_ios: true
 
