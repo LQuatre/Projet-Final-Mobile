@@ -96,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                    backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                     child: const Icon(
                       Icons.person_outline,
                       color: AppTheme.primaryColor,
@@ -176,7 +176,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -197,8 +197,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Colors.black.withOpacity(0.1),
-                        Colors.black.withOpacity(0.85),
+                        Colors.black.withValues(alpha: 0.1),
+                        Colors.black.withValues(alpha: 0.85),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -215,7 +215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.cyan.withOpacity(0.85),
+                        color: Colors.cyan.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -281,7 +281,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3F51B5).withOpacity(0.2),
+              color: const Color(0xFF3F51B5).withValues(alpha: 0.2),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -335,7 +335,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         border: Border.all(color: AppTheme.borderLight),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

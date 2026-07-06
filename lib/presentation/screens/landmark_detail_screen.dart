@@ -41,7 +41,9 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
       }
 
       Position currentPosition = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       double distanceInMeters = Geolocator.distanceBetween(
@@ -260,8 +262,8 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: widget.landmark.isVisited
-                                ? const Color(0xFF10B981).withOpacity(0.2)
-                                : Colors.orange.withOpacity(0.2),
+                                ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                                : Colors.orange.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: widget.landmark.isVisited ? const Color(0xFF10B981) : Colors.orange,
