@@ -363,10 +363,10 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
       ),
       bottomSheet: !widget.landmark.isVisited
           ? Container(
-              color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               width: double.infinity,
               decoration: BoxDecoration(
+                color: Colors.white,
                 border: Border(top: BorderSide(color: AppTheme.borderLight)),
               ),
               child: ScaleOnPress(
