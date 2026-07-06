@@ -17,20 +17,45 @@ class TriviaRepositoryImpl implements TriviaRepository {
     final categoriesDto = await remoteDatasource.fetchCategories();
     if (categoriesDto.isEmpty) return [];
 
-    final joinedNames = categoriesDto.map((dto) => dto.name).join(' | ');
-    final translatedJoined = await _translateToFrench(joinedNames, remoteDatasource.client);
-    final parts = translatedJoined.split(RegExp(r'\s*\|\s*'));
+    final List<TriviaCategory> results = [];
+    final List<int> apiIndices = [];
+    final List<String> toTranslate = [];
 
-    if (parts.length == categoriesDto.length) {
-      return List.generate(categoriesDto.length, (index) {
-        return TriviaCategory(
-          id: categoriesDto[index].id,
-          name: parts[index],
-        );
-      });
+    for (int i = 0; i < categoriesDto.length; i++) {
+      final dto = categoriesDto[i];
+      if (_localCategoryTranslations.containsKey(dto.name)) {
+        results.add(TriviaCategory(
+          id: dto.id,
+          name: _localCategoryTranslations[dto.name]!,
+        ));
+      } else {
+        results.add(TriviaCategory(
+          id: dto.id,
+          name: dto.name,
+        ));
+        apiIndices.add(i);
+        toTranslate.add(dto.name);
+      }
     }
 
-    return categoriesDto.map((dto) => dto.toDomain()).toList();
+    if (toTranslate.isNotEmpty) {
+      try {
+        final joinedNames = toTranslate.join(' | ');
+        final translatedJoined = await _translateToFrench(joinedNames, remoteDatasource.client);
+        final parts = translatedJoined.split(RegExp(r'\s*\|\s*'));
+        if (parts.length == toTranslate.length) {
+          for (int i = 0; i < apiIndices.length; i++) {
+            final index = apiIndices[i];
+            results[index] = TriviaCategory(
+              id: results[index].id,
+              name: parts[i],
+            );
+          }
+        }
+      } catch (_) {}
+    }
+
+    return results;
   }
 
   Future<String> _translateToFrench(String text, http.Client client) async {
@@ -114,4 +139,32 @@ class TriviaRepositoryImpl implements TriviaRepository {
 
     return Future.wait(futures);
   }
+
+  static const Map<String, String> _localCategoryTranslations = {
+    "General Knowledge": "Culture Générale",
+    "Books": "Livres",
+    "Entertainment: Books": "Livres",
+    "Entertainment: Film": "Divertissement : Cinéma",
+    "Entertainment: Music": "Divertissement : Musique",
+    "Entertainment: Musicals & Theatres": "Divertissement : Théâtre",
+    "Entertainment: Television": "Divertissement : Télévision",
+    "Entertainment: Video Games": "Divertissement : Jeux vidéo",
+    "Entertainment: Board Games": "Divertissement : Jeux de société",
+    "Science & Nature": "Sciences & Nature",
+    "Science: Computers": "Sciences : Informatique",
+    "Science: Mathematics": "Sciences : Mathématiques",
+    "Science: Gadgets": "Sciences : Gadgets",
+    "Mythology": "Mythologie",
+    "Sports": "Sports",
+    "Geography": "Géographie",
+    "History": "Histoire",
+    "Politics": "Politique",
+    "Art": "Art",
+    "Celebrities": "Célébrités",
+    "Animals": "Animaux",
+    "Vehicles": "Véhicules",
+    "Entertainment: Comics": "Divertissement : Bandes dessinées",
+    "Entertainment: Japanese Anime & Manga": "Divertissement : Anime & Manga japonais",
+    "Entertainment: Cartoon & Animations": "Divertissement : Dessins animés",
+  };
 }

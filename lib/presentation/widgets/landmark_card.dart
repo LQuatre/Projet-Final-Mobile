@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../data/models/landmark.dart';
 import 'scale_on_press.dart';
@@ -24,36 +25,51 @@ class LandmarkCard extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.network(
-                landmark.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[850],
-                    child: const Icon(
-                      Icons.image_not_supported,
-                      size: 50,
-                      color: Colors.grey,
+              child: landmark.imageUrl.startsWith('http')
+                  ? Image.network(
+                      landmark.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[850],
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.grey[900],
+                          child: const Center(
+                            child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.indigo,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Image.file(
+                      File(landmark.imageUrl),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[850],
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: Colors.grey[900],
-                    child: const Center(
-                      child: SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.indigo,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
             ),
             Positioned.fill(
               child: Container(
@@ -133,7 +149,7 @@ class LandmarkCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        landmark.date,
+                        landmark.formattedDate,
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 12,

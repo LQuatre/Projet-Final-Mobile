@@ -59,6 +59,16 @@ class LandmarkApiService {
     return prefs.getStringList('visited_landmark_ids') ?? [];
   }
 
+  Future<void> savePhotoPath(String id, String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('landmark_photo_$id', path);
+  }
+
+  Future<String?> getPhotoPath(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('landmark_photo_$id');
+  }
+
   Future<void> markAsVisited(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> visited = prefs.getStringList('visited_landmark_ids') ?? [];
@@ -85,10 +95,15 @@ class LandmarkApiService {
       landmarks = List.from(fallbackLandmarks);
     }
 
+    final prefs = await SharedPreferences.getInstance();
     final visitedIds = await getVisitedIds();
     for (var landmark in landmarks) {
       if (visitedIds.contains(landmark.id)) {
         landmark.isVisited = true;
+        final localPhoto = prefs.getString('landmark_photo_${landmark.id}');
+        if (localPhoto != null && localPhoto.isNotEmpty) {
+          landmark.imageUrl = localPhoto;
+        }
       }
     }
     return landmarks;

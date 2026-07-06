@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../data/datasources/landmark_api_service.dart';
 import '../../data/models/landmark.dart';
 import 'landmark_camera_screen.dart';
 import '../widgets/scale_on_press.dart';
@@ -84,30 +87,93 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Row(
-            children: const [
-              Icon(Icons.location_off, color: Colors.orange),
-              SizedBox(width: 10),
-              Text("Distance trop grande"),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.location_off_outlined,
+                  color: Colors.amber,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Distance trop grande",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Souhaitez-vous simuler que vous êtes sur place (GPS fictif) pour les besoins de l'évaluation ?",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textPrimary,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A237E),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    _proceedToCamera();
+                  },
+                  child: const Text(
+                    "Simuler le GPS",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text(
+                    "Annuler",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-          content: Text(
-            "$message\n\nSouhaitez-vous simuler que vous êtes sur place (GPS fictif) pour les besoins de l'évaluation ?",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Annuler", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                _proceedToCamera();
-              },
-              child: const Text("Simuler GPS", style: TextStyle(color: Colors.white)),
-            ),
-          ],
         );
       },
     );
@@ -156,26 +222,48 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: SizedBox(
-                  height: 120,
+                  height: 150,
                   width: double.infinity,
-                  child: Image.network(
-                    widget.landmark.imageUrl,
+                  child: Image.file(
+                    File(photoPath),
                     fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.successColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    final dialogNavigator = Navigator.of(dialogContext);
+                    final apiService = LandmarkApiService();
+                    await apiService.markAsVisited(widget.landmark.id);
+                    await apiService.savePhotoPath(widget.landmark.id, photoPath);
+                    if (mounted) {
+                      setState(() {
+                        widget.landmark.imageUrl = photoPath;
+                      });
+                    }
+                    dialogNavigator.pop();
+                    navigator.pop(photoPath);
+                  },
+                  child: const Text(
+                    "Génial !",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
             ],
           ),
-          actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.successColor),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                Navigator.pop(context, true);
-              },
-              child: const Text("Génial !"),
-            ),
-          ],
         );
       },
     );
@@ -199,16 +287,38 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
             expandedHeight: 300,
             pinned: true,
             backgroundColor: AppTheme.primaryColor,
-            leading: CircleAvatar(
-              backgroundColor: Colors.black45,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 12.0, top: 8.0, bottom: 8.0),
+              child: ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
               title: Text(
                 widget.landmark.title,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -220,11 +330,17 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    widget.landmark.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200]),
-                  ),
+                  widget.landmark.imageUrl.startsWith('http')
+                      ? Image.network(
+                          widget.landmark.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200]),
+                        )
+                      : Image.file(
+                          File(widget.landmark.imageUrl),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200]),
+                        ),
                   const DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -245,41 +361,29 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_month, color: Colors.grey, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Découvert le : ${widget.landmark.date}",
-                              style: const TextStyle(color: Colors.grey, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: widget.landmark.isVisited
-                                ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                                : Colors.orange.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: widget.landmark.isVisited ? const Color(0xFF10B981) : Colors.orange,
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            widget.landmark.isVisited ? "EXPLORÉ" : "NON VISITÉ",
-                            style: TextStyle(
-                              color: widget.landmark.isVisited ? const Color(0xFF10B981) : Colors.orange,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: widget.landmark.isVisited
+                              ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                              : Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: widget.landmark.isVisited ? const Color(0xFF10B981) : Colors.orange,
+                            width: 1.5,
                           ),
                         ),
-                      ],
+                        child: Text(
+                          widget.landmark.isVisited ? "EXPLORÉ" : "NON VISITÉ",
+                          style: TextStyle(
+                            color: widget.landmark.isVisited ? const Color(0xFF10B981) : Colors.orange,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 24),
                     Text(
@@ -314,12 +418,15 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
                             children: [
                               const Icon(Icons.location_on, color: AppTheme.primaryColor, size: 20),
                               const SizedBox(width: 8),
-                              Text(
-                                "Coordonnées géographiques",
-                                style: TextStyle(
-                                  color: AppTheme.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                              Expanded(
+                                child: Text(
+                                  "Coordonnées géographiques",
+                                  style: TextStyle(
+                                    color: AppTheme.textPrimary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -373,8 +480,10 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
                 onTap: _isCheckingLocation ? null : _onCheckInPressed,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
+                    backgroundColor: const Color(0xFF1A237E),
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0xFF1A237E),
+                    disabledForegroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
