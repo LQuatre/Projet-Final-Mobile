@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../data/models/landmark.dart';
-import '../../data/datasources/landmark_api_service.dart';
+import 'package:provider/provider.dart';
+import '../../domain/models/landmark.dart';
+import '../controllers/landmark_controller.dart';
 import '../widgets/landmark_card.dart';
 import '../theme/app_theme.dart';
 import 'landmark_detail_screen.dart';
@@ -13,43 +14,32 @@ class LandmarkHomeScreen extends StatefulWidget {
 }
 
 class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
-  final LandmarkApiService _apiService = LandmarkApiService();
-  List<Landmark> _landmarks = [];
-  bool _isLoading = true;
-  String? _errorMessage;
-
   @override
   void initState() {
     super.initState();
-    _loadLandmarks();
-  }
-
-  Future<void> _loadLandmarks() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+    // Le contrôleur a déjà chargé les landmarks au démarrage de l'app,
+    // mais on peut forcer un rafraîchissement au besoin si nécessaire, ou ne rien faire si déjà chargé.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = context.read<LandmarkController>();
+      if (controller.landmarks.isEmpty && controller.state != LandmarkState.loading) {
+        controller.loadLandmarks();
+      }
     });
-
-    try {
-      final data = await _apiService.fetchLandmarks();
-      setState(() {
-        _landmarks = data;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = "Impossible de charger les données.";
-        _isLoading = false;
-      });
-    }
   }
 
-  int get _visitedCount => _landmarks.where((l) => l.isVisited).length;
+  Future<void> _refreshLandmarks() async {
+    await context.read<LandmarkController>().loadLandmarks();
+  }
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final bool isTablet = width >= 600;
+    final controller = context.watch<LandmarkController>();
+    final landmarks = controller.landmarks;
+    final isLoading = controller.state == LandmarkState.loading;
+    final errorMessage = controller.errorMessage;
+    final visitedCount = controller.visitedCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -69,7 +59,7 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
             ),
             const SizedBox(height: 2),
             Text(
-              '$_visitedCount / ${_landmarks.length} explorés',
+              '$visitedCount / ${landmarks.length} explorés',
               style: TextStyle(
                 fontSize: 12,
                 color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -80,16 +70,16 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadLandmarks,
+            onPressed: _refreshLandmarks,
             tooltip: 'Rafraîchir les lieux',
           ),
         ],
       ),
-      body: _isLoading
+      body: isLoading
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : _errorMessage != null
+          : errorMessage != null
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -97,42 +87,42 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
                       Icon(Icons.error_outline, size: 60, color: AppTheme.errorColor),
                       const SizedBox(height: 16),
                       Text(
-                        _errorMessage!,
+                        errorMessage,
                         style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: _loadLandmarks,
+                        onPressed: _refreshLandmarks,
                         child: const Text('Réessayer'),
                       ),
                     ],
                   ),
                 )
-              : _landmarks.isEmpty
+              : landmarks.isEmpty
                   ? const Center(
                       child: Text(
                         'Aucun monument trouvé.',
                       ),
                     )
                   : RefreshIndicator(
-                      onRefresh: _loadLandmarks,
+                      onRefresh: _refreshLandmarks,
                       color: AppTheme.primaryColor,
                       backgroundColor: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: isTablet
-                            ? _buildTabletGrid(context)
-                            : _buildMobileList(context),
+                            ? _buildTabletGrid(context, landmarks)
+                            : _buildMobileList(context, landmarks),
                       ),
                     ),
     );
   }
 
-  Widget _buildMobileList(BuildContext context) {
+  Widget _buildMobileList(BuildContext context, List<Landmark> landmarks) {
     return ListView.builder(
-      itemCount: _landmarks.length,
+      itemCount: landmarks.length,
       itemBuilder: (context, index) {
-        final landmark = _landmarks[index];
+        final landmark = landmarks[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
           child: SizedBox(
@@ -147,7 +137,7 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
     );
   }
 
-  Widget _buildTabletGrid(BuildContext context) {
+  Widget _buildTabletGrid(BuildContext context, List<Landmark> landmarks) {
     final double width = MediaQuery.of(context).size.width;
     int crossAxisCount = 2;
     if (width >= 900) {
@@ -164,9 +154,9 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
         mainAxisSpacing: 12,
         childAspectRatio: 1.4,
       ),
-      itemCount: _landmarks.length,
+      itemCount: landmarks.length,
       itemBuilder: (context, index) {
-        final landmark = _landmarks[index];
+        final landmark = landmarks[index];
         return LandmarkCard(
           landmark: landmark,
           onTap: () => _navigateToDetail(landmark),
@@ -176,18 +166,11 @@ class _LandmarkHomeScreenState extends State<LandmarkHomeScreen> {
   }
 
   Future<void> _navigateToDetail(Landmark landmark) async {
-    final dynamic result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => LandmarkDetailScreen(landmark: landmark),
       ),
     );
-
-    if (result is String) {
-      setState(() {
-        landmark.isVisited = true;
-        landmark.imageUrl = result;
-      });
-    }
   }
 }

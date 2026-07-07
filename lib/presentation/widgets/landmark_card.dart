@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../../data/models/landmark.dart';
+import '../../domain/models/landmark.dart';
 import 'scale_on_press.dart';
 
 class LandmarkCard extends StatelessWidget {

@@ -3,8 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../data/datasources/landmark_api_service.dart';
-import '../../data/models/landmark.dart';
+import 'package:provider/provider.dart';
+import '../../domain/models/landmark.dart';
+import '../controllers/landmark_controller.dart';
 import 'landmark_camera_screen.dart';
 import '../widgets/scale_on_press.dart';
 import '../theme/app_theme.dart';
@@ -245,14 +246,12 @@ class _LandmarkDetailScreenState extends State<LandmarkDetailScreen> {
                   onPressed: () async {
                     final navigator = Navigator.of(context);
                     final dialogNavigator = Navigator.of(dialogContext);
-                    final apiService = LandmarkApiService();
-                    await apiService.markAsVisited(widget.landmark.id);
-                    await apiService.savePhotoPath(widget.landmark.id, photoPath);
-                    if (mounted) {
-                      setState(() {
-                        widget.landmark.imageUrl = photoPath;
-                      });
-                    }
+                    
+                    await context.read<LandmarkController>().visitLandmark(
+                          widget.landmark.id,
+                          photoPath,
+                        );
+
                     dialogNavigator.pop();
                     navigator.pop(photoPath);
                   },

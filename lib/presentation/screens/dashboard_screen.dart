@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/datasources/landmark_api_service.dart';
+import '../controllers/landmark_controller.dart';
 import '../theme/app_theme.dart';
 import '../widgets/scale_on_press.dart';
 import 'category_selection_screen.dart';
@@ -16,13 +17,33 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  final LandmarkApiService _apiService = LandmarkApiService();
-  int _visitedCount = 0;
-  final int _totalCount = 5;
-  bool _isLoading = true;
-
   String _userName = "Voyageur";
   String _userAvatar = "";
+
+  int get _visitedCount {
+    try {
+      return context.watch<LandmarkController>().visitedCount;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  int get _totalCount {
+    try {
+      final len = context.watch<LandmarkController>().landmarks.length;
+      return len > 0 ? len : 5;
+    } catch (_) {
+      return 5;
+    }
+  }
+
+  bool get _isLoading {
+    try {
+      return context.watch<LandmarkController>().state == LandmarkState.loading;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   void initState() {
@@ -40,21 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadProgress() async {
-    try {
-      final visited = await _apiService.getVisitedIds();
-      if (mounted) {
-        setState(() {
-          _visitedCount = visited.length;
-          _isLoading = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
+    // La progression est maintenant gérée de manière réactive par LandmarkController
   }
 
   Future<void> _resetData() async {
@@ -78,6 +85,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     await prefs.clear();
+    if (mounted) {
+      context.read<LandmarkController>().loadLandmarks();
+    }
     await _loadProgress();
     await _loadProfile();
   }

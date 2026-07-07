@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/landmark.dart';
+import '../../domain/models/landmark.dart';
 
 class LandmarkApiService {
   static const String apiUrl = 'https://raw.githubusercontent.com/lucas-diot/mock-api/main/landmarks.json';
